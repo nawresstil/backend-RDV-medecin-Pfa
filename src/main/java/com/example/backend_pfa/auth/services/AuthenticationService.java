@@ -1,0 +1,74 @@
+package com.example.backend_pfa.auth.services;
+
+
+import com.example.backend_pfa.auth.dao.AuthenticationRequest;
+import com.example.backend_pfa.auth.dao.AuthenticationResponse;
+import com.example.backend_pfa.auth.dao.RegisterRequest;
+import com.example.backend_pfa.auth.security.JwtService;
+import com.example.backend_pfa.features.user.dao.entities.User;
+import com.example.backend_pfa.features.user.dao.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class AuthenticationService {
+    private  final UserRepository repository;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final JwtService jwtService;
+
+    private final AuthenticationManager authenticationManager;
+
+    //this authenticationResponse contains the token
+    public AuthenticationResponse register(RegisterRequest request ) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password and Confirm Password do not match");
+        }
+
+       User user = User.builder()
+                .firstname(request.getFirstname())
+                .lastname(request.getLastname())
+                .joiningDate(request.getJoiningDate())
+                .role(request.getRole())   //Role.DOCTOR
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .confirmPassword(passwordEncoder.encode(request.getConfirmPassword()))
+                .phone(request.getPhone())
+                .build();
+        repository.save(user);
+        var jwtToken = jwtService.generateToken( user);
+        return AuthenticationResponse
+                .builder()
+                .token(jwtToken)
+                .role(request.getRole())
+                .build();
+    }
+
+    // if the pswd or email are wrong so an exception would be thrown
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
+        // if the credentials are correct then return the token
+        User user = repository.findByUsername(request.getUsername());
+//                .orElseThrow();
+        String jwtToken = jwtService.generateToken(user);
+
+        return AuthenticationResponse
+                .builder()
+                .token(jwtToken)
+                .role(user.getRole())
+                .build();
+    }
+
+}
