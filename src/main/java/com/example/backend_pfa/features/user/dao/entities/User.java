@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -78,6 +79,7 @@ public class User implements UserDetails {
     private String profilePicture;
 
     // Doctor-specific fields
+    private String gender;
     private String aboutMe;
     private String biography;
 
@@ -88,15 +90,24 @@ public class User implements UserDetails {
     @ElementCollection
     @CollectionTable(name = "clinic_images", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "image_path")
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private List<String> clinicImages;
+
 
     private String clinicContact;
 
     private boolean isFree;
     private Double customPrice;
 
-    @Transient
+    @ElementCollection
+    @CollectionTable(
+            name = "doctors_services",
+            joinColumns = @JoinColumn(name = "user_id"),
+            foreignKey = @ForeignKey(name = "fk_user_services", foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE")
+    )
+    @Column(name = "doctor_services")
     private List<String> services;
+
 
     @Transient
     private List<String> speciality;

@@ -248,6 +248,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // Doctor-specific fields
+        user.setGender(dto.getGender());
         user.setAboutMe(dto.getAboutMe());
         user.setBiography(dto.getBiography());
         user.setClinicName(dto.getClinicName());

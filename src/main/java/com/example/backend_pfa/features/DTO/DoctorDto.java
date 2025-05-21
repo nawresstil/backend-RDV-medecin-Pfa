@@ -53,7 +53,7 @@ public class DoctorDto {
 
     private String aboutMe;
     private String biography;
-
+    private String gender;
     private String clinicName;
     private String clinicAddress;
     private String clinicLogo;
@@ -63,7 +63,7 @@ public class DoctorDto {
 
     private boolean isFree;
     private Double customPrice;
-
+    @ElementCollection
     private List<String> services;
     private List<Long> specialityIds; // Used for incoming data from frontend
 
