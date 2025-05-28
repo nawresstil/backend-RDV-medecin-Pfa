@@ -41,4 +41,5 @@ public interface UserService {
 
     ResponseEntity<List<DoctorDto>> getDoctors(String keyword);
 
+//    ResponseEntity<List<User>> getPatientsOfDoctor(String doctorUsername);
 }

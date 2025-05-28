@@ -4,8 +4,10 @@ import com.example.backend_pfa.features.DTO.AwardDto;
 import com.example.backend_pfa.features.DTO.EducationDto;
 import com.example.backend_pfa.features.DTO.ExperienceDto;
 import com.example.backend_pfa.features.DTO.RegistrationDto;
+import com.example.backend_pfa.features.Disponibility.dao.entities.Disponibility;
 import com.example.backend_pfa.features.Speciality.dao.entities.Speciality;
 import com.example.backend_pfa.features.user.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -18,6 +20,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -112,27 +117,33 @@ public class User implements UserDetails {
     @Transient
     private List<String> speciality;
 
-    @Transient
+    @ElementCollection
+    @CollectionTable(name = "user_education", joinColumns = @JoinColumn(name = "user_id"))
     private List<EducationDto> education;
 
 
-    @Transient
+    @ElementCollection
+    @CollectionTable(name = "user_experience", joinColumns = @JoinColumn(name = "user_id"))
     private List<ExperienceDto> experience;
 
-    @Transient
+    @ElementCollection
+    @CollectionTable(name = "user_awards", joinColumns = @JoinColumn(name = "user_id"))
     private List<AwardDto> awards;
 
     @Transient
     private List<String> memberships;
 
-    @Transient
+    @ElementCollection
+    @CollectionTable(name = "user_registrations", joinColumns = @JoinColumn(name = "user_id"))
     private List<RegistrationDto> registrations;
-
-
 
 
     private String bloodGroup;
 
+
+    public String getFullName() {
+        return firstname + " " + lastname;
+    }
 
 //    @JsonIgnore
 //    @OneToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL,mappedBy = "user")
@@ -155,6 +166,11 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
+
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL)
+    private List<Disponibility> disponibilities;
 
     public Role getRole() {
         return role;

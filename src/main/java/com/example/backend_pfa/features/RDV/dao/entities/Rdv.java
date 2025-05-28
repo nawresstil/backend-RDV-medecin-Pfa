@@ -8,8 +8,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -26,12 +29,23 @@ public class Rdv {
     private LocalTime startTime;
     private LocalTime endTime;
 
+
     @Enumerated(EnumType.STRING)
     private RdvStatus status;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 
     @ManyToOne
     private User doctor;
 
     @ManyToOne
     private User patient;
+
+    @OneToOne(mappedBy = "rdv")
+    private Consultation consultation;
+
 }

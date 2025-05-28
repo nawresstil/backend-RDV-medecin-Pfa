@@ -25,4 +25,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "OR LOWER(u.clinicName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<User> findDoctorsByKeyword(@Param("role") Role role, @Param("keyword") String keyword);
 
+
 }

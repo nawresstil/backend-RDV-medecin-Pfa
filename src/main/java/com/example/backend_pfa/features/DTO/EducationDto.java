@@ -10,3 +10,4 @@ public class EducationDto {
     private String institute;
     private int yearOfCompletion;
 }
+

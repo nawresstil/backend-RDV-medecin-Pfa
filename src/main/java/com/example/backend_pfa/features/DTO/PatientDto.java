@@ -2,10 +2,15 @@ package com.example.backend_pfa.features.DTO;
 
 import com.example.backend_pfa.features.user.enums.Role;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Embeddable;
 import lombok.Data;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.Date;
+
 
 @Embeddable
 @Data
@@ -46,7 +51,6 @@ public class PatientDto {
     private Role role;
 
     private String profilePicture;
-
 
     //for patient
 

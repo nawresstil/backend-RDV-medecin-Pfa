@@ -86,6 +86,15 @@ public class UserController {
         return userService.getAllPatients();
     }
 
+
+//    @PreAuthorize("hasRole('DOCTOR')")A
+//    @GetMapping("/my-patients")
+//    public ResponseEntity<List<User>> getMyPatients(Principal principal) {
+//        String doctorUsername = principal.getName();
+//        return userService.getPatientsOfDoctor(doctorUsername);
+//    }
+
+
     @PreAuthorize("hasRole('DOCTOR')")
     @PutMapping(path = "/doctor/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateDoctorProfile(

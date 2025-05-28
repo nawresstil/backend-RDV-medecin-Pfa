@@ -24,8 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -235,7 +237,6 @@ public class UserServiceImpl implements UserService {
         user.setCountry(dto.getCountry());
         user.setJoiningDate(dto.getJoiningDate());
         user.setUsername(dto.getUsername());
-
         // Handle password change
         if (dto.getOldPassword() != null && !dto.getOldPassword().isBlank()) {
             if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
@@ -256,6 +257,13 @@ public class UserServiceImpl implements UserService {
         user.setClinicContact(dto.getClinicContact());
         user.setFree(dto.isFree());
         user.setCustomPrice(dto.getCustomPrice());
+        // Set education, experience, awards, memberships, registrations
+        user.setEducation(dto.getEducation());
+        user.setExperience(dto.getExperience());
+        user.setAwards(dto.getAwards());
+        user.setMemberships(dto.getMemberships());
+        user.setRegistrations(dto.getRegistrations());
+
 
         // Handle profile picture upload
         if (profilePicture != null && !profilePicture.isEmpty()) {
@@ -307,62 +315,22 @@ public class UserServiceImpl implements UserService {
         User updatedUser = userRepository.save(user);
         return mapToDoctorDto(updatedUser);
     }
-
-//    @Override
-//    public DoctorDto updateDoctor(DoctorDto dto) {
-//        User user = userRepository.findById(dto.getId())
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//
-//        if (user.getRole() != Role.DOCTOR) {
-//            throw new AccessDeniedException("Not a doctor");
-//        }
-//
-//        // Shared fields
-//        user.setFirstname(dto.getFirstname());
-//        user.setLastname(dto.getLastname());
-//        user.setDateOfBirth(dto.getDateOfBirth());
-//        user.setEmail(dto.getEmail());
-//        user.setPhone(dto.getPhone());
-//        user.setAddress(dto.getAddress());
-//        user.setCity(dto.getCity());
-//        user.setState(dto.getState());
-//        user.setZipCode(dto.getZipCode());
-//        user.setCountry(dto.getCountry());
-//        user.setJoiningDate(dto.getJoiningDate());
-//        user.setUsername(dto.getUsername());
-//
-//        // 2) Password change (if requested)
-//        if (dto.getOldPassword() != null && !dto.getOldPassword().isEmpty()) {
-//            if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
-//                throw new IllegalArgumentException("Old password incorrect");
-//            }
-//            if (!dto.getPassword().equals(dto.getConfirmPassword())) {
-//                throw new IllegalArgumentException("Passwords do not match");
-//            }
-//            user.setPassword(passwordEncoder.encode(dto.getPassword()));
-//        }
-//
-//        // 3) Doctor‑specific fields
-//        user.setAboutMe(dto.getAboutMe());
-//        user.setBiography(dto.getBiography());
-//        user.setClinicName(dto.getClinicName());
-//        user.setClinicAddress(dto.getClinicAddress());
-//        user.setClinicImages(dto.getClinicImages());
-//        user.setClinicContact(dto.getClinicContact());
-//        user.setFree(dto.isFree());
-//        user.setCustomPrice(dto.getCustomPrice());
-//        user.setServices(dto.getServices());
-//        user.setSpecializations(dto.getSpecializations());
-//        user.setEducation(dto.getEducation());
-//        user.setExperience(dto.getExperience());
-//        user.setAwards(dto.getAwards());
-//        user.setMemberships(dto.getMemberships());
-//        user.setRegistrations(dto.getRegistrations());
-//
-//        userRepository.save(user);
-//        return mapToDoctorDto(user);
-//    }
-
+    // --- Mappers ---
+    public DoctorDto mapToDoctorDto(User user) {
+        DoctorDto dto = new DoctorDto();
+        BeanUtils.copyProperties(user, dto);
+        dto.setServices(user.getServices());
+        dto.setSpecialityIds(user.getSpecialities()
+                .stream()
+                .map(Speciality::getId)
+                .collect(Collectors.toList()));
+        dto.setEducation(user.getEducation());
+        dto.setExperience(user.getExperience());
+        dto.setAwards(user.getAwards());
+        dto.setMemberships(user.getMemberships());
+        dto.setRegistrations(user.getRegistrations());
+        return dto;
+    }
 
     @Override
     public PatientDto updatePatient(PatientDto dto, MultipartFile profilePicture) {
@@ -420,67 +388,13 @@ public class UserServiceImpl implements UserService {
 
         // Patient-specific field
         user.setBloodGroup(dto.getBloodGroup());
-
         User updatedUser = userRepository.save(user);
         return mapToPatientDto(updatedUser);
     }
 
 
-//    @Override
-//    public PatientDto updatePatient(PatientDto dto) {
-//        User user = userRepository.findById(dto.getId())
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//        if (user.getRole() != Role.PATIENT) {
-//            throw new AccessDeniedException("Not a patient");
-//        }
-//
-//        // 1) Shared fields
-//        user.setFirstname(dto.getFirstname());
-//        user.setLastname(dto.getLastname());
-//        user.setDateOfBirth(dto.getDateOfBirth());
-//        user.setEmail(dto.getEmail());
-//        user.setPhone(dto.getPhone());
-//        user.setAddress(dto.getAddress());
-//        user.setCity(dto.getCity());
-//        user.setState(dto.getState());
-//        user.setZipCode(dto.getZipCode());
-//        user.setCountry(dto.getCountry());
-//        user.setJoiningDate(dto.getJoiningDate());
-//        user.setUsername(dto.getUsername());
-//
-//        // 2) Password change
-//        if (dto.getOldPassword() != null && !dto.getOldPassword().isEmpty()) {
-//            if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
-//                throw new IllegalArgumentException("Old password incorrect");
-//            }
-//            if (!dto.getPassword().equals(dto.getConfirmPassword())) {
-//                throw new IllegalArgumentException("Passwords do not match");
-//            }
-//            user.setPassword(passwordEncoder.encode(dto.getPassword()));
-//        }
-//
-//        // 3) Patient‑specific field
-//        user.setBloodGroup(dto.getBloodGroup());
-//
-//        userRepository.save(user);
-//        return mapToPatientDto(user);
-//    }
 
-    // --- Mappers ---
-    public DoctorDto mapToDoctorDto(User user) {
-        DoctorDto dto = new DoctorDto();
-        BeanUtils.copyProperties(user, dto);
-        dto.setServices(user.getServices());
-        dto.setSpecialityIds(user.getSpecialities()
-                .stream()
-                .map(Speciality::getId)
-                .collect(Collectors.toList()));        dto.setEducation(user.getEducation());
-        dto.setExperience(user.getExperience());
-        dto.setAwards(user.getAwards());
-        dto.setMemberships(user.getMemberships());
-        dto.setRegistrations(user.getRegistrations());
-        return dto;
-    }
+
 
 
     private PatientDto mapToPatientDto(User user) {
@@ -489,6 +403,9 @@ public class UserServiceImpl implements UserService {
         dto.setBloodGroup(user.getBloodGroup());
         return dto;
     }
+
+
+
 
 //    @Override
 //    public ResponseEntity<List<DoctorDto>> getDoctors(String keyword) {
