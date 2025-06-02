@@ -1,8 +1,12 @@
 package com.example.backend_pfa.features.DTO;
 
+import com.example.backend_pfa.features.RDV.enums.RdvStatus;
 import com.example.backend_pfa.features.user.enums.Role;
 
+import com.example.backend_pfa.features.user.enums.UserStatus;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -48,8 +52,9 @@ public class DoctorDto {
     private Role role;
 
     private String profilePicture;
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
 
-    // Doctor-specific
 
     private String aboutMe;
     private String biography;
@@ -64,7 +69,7 @@ public class DoctorDto {
     private boolean isFree;
     private Double customPrice;
     @ElementCollection
-    private List<String> services;
+    private List<ServicesDto> services;
     private List<Long> specialityIds; // Used for incoming data from frontend
 
     private List<EducationDto> education;

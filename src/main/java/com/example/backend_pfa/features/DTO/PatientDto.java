@@ -2,8 +2,11 @@ package com.example.backend_pfa.features.DTO;
 
 import com.example.backend_pfa.features.user.enums.Role;
 
+import com.example.backend_pfa.features.user.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -55,5 +58,6 @@ public class PatientDto {
     //for patient
 
     private String bloodGroup;
+    private String type;
 
 }

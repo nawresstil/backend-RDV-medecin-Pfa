@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Data
@@ -16,5 +17,6 @@ public class RdvDto {
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
+    private LocalDateTime createdAt;
     private String status; // String instead of enum
 }

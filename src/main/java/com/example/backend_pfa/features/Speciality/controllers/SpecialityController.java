@@ -48,14 +48,12 @@ import java.util.List;
     public ResponseEntity<Speciality> updateSpeciality(
             @PathVariable Long id,
             @RequestParam("name") String name,
-            @RequestParam(value = "image", required = false) MultipartFile image) {
-        try {
-            Speciality updatedSpeciality = specialityService.updateSpeciality(id, name, image);
-            return new ResponseEntity<>(updatedSpeciality, HttpStatus.OK);
-        } catch (IOException e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+            @RequestParam(value = "image", required = false) MultipartFile imageFile
+    ) throws IOException {
+        Speciality updated = specialityService.updateSpeciality(id, name, imageFile);
+        return ResponseEntity.ok(updated);
     }
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Speciality> deleteSpeciality(@PathVariable Long id) {

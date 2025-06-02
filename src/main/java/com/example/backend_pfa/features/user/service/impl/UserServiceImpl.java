@@ -3,11 +3,15 @@ package com.example.backend_pfa.features.user.service.impl;
 
 import com.example.backend_pfa.features.DTO.DoctorDto;
 import com.example.backend_pfa.features.DTO.PatientDto;
+import com.example.backend_pfa.features.RDV.service.EmailSenderService;
 import com.example.backend_pfa.features.Speciality.dao.entities.Speciality;
+import com.example.backend_pfa.features.Speciality.dao.repository.SpecialityRepository;
 import com.example.backend_pfa.features.user.dao.entities.User;
 import com.example.backend_pfa.features.user.dao.repositories.UserRepository;
 import com.example.backend_pfa.features.user.enums.Role;
+import com.example.backend_pfa.features.user.enums.UserStatus;
 import com.example.backend_pfa.features.user.service.UserService;
+import jakarta.mail.MessagingException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Autowired
+    private SpecialityRepository specialityRepository;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     private final PasswordEncoder passwordEncoder;
@@ -45,6 +49,9 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
+    @Autowired
+    private EmailSenderService emailSenderService;
+
     @Override
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username);
@@ -214,7 +221,7 @@ public class UserServiceImpl implements UserService {
         return ResponseEntity.ok(userRepository.findAllByRole(Role.PATIENT));
     }
 
-    // … existing methods …
+
     @Override
     public DoctorDto updateDoctor(DoctorDto dto, MultipartFile profilePicture, MultipartFile[] clinicImages) {
         User user = userRepository.findById(dto.getId())
@@ -247,16 +254,20 @@ public class UserServiceImpl implements UserService {
             }
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
-
+        UserStatus currentStatus = user.getStatus();
         // Doctor-specific fields
+        List<Speciality> specialities = specialityRepository.findAllById(dto.getSpecialityIds());
+        user.setSpecialities(specialities);
         user.setGender(dto.getGender());
         user.setAboutMe(dto.getAboutMe());
         user.setBiography(dto.getBiography());
         user.setClinicName(dto.getClinicName());
         user.setClinicAddress(dto.getClinicAddress());
+        user.setStatus(currentStatus);
         user.setClinicContact(dto.getClinicContact());
         user.setFree(dto.isFree());
         user.setCustomPrice(dto.getCustomPrice());
+        user.setServices(dto.getServices());
         // Set education, experience, awards, memberships, registrations
         user.setEducation(dto.getEducation());
         user.setExperience(dto.getExperience());
@@ -331,6 +342,60 @@ public class UserServiceImpl implements UserService {
         dto.setRegistrations(user.getRegistrations());
         return dto;
     }
+    @Override
+    public DoctorDto acceptDoctor(Long doctorId) {
+        User doctor = userRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        if (doctor.getRole() != Role.DOCTOR) {
+            throw new AccessDeniedException("Not a doctor");
+        }
+
+        doctor.setStatus(UserStatus.CONFIRMED);
+        User savedDoctor = userRepository.save(doctor);
+
+        String subject = "✅ Votre compte a été approuvé";
+        String body = "<p>Bonjour Dr <strong>" + savedDoctor.getFullName() + "</strong>,</p>" +
+                "<p>Nous avons le plaisir de vous informer que votre demande d'inscription en tant que docteur a été <span style='color:green; font-weight:bold;'>approuvée</span>.</p>" +
+                "<p>Vous pouvez maintenant vous connecter à votre compte et commencer à utiliser la plateforme.</p>" +
+                "<br><p>Cordialement,<br>L'équipe administrative</p>";
+
+        try {
+            emailSenderService.sendEmail(savedDoctor.getEmail(), subject, body);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send approval email", e);
+        }
+
+        return mapToDoctorDto(savedDoctor);
+    }
+
+    @Override
+    public DoctorDto rejectDoctor(Long doctorId) {
+        User doctor = userRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        if (doctor.getRole() != Role.DOCTOR) {
+            throw new AccessDeniedException("Not a doctor");
+        }
+
+        doctor.setStatus(UserStatus.CANCELLED);
+        User savedDoctor = userRepository.save(doctor);
+
+        String subject = "❌ Votre demande a été refusée";
+        String body = "<p>Bonjour Dr <strong>" + savedDoctor.getFullName() + "</strong>,</p>" +
+                "<p>Après étude de votre dossier, nous sommes au regret de vous informer que votre demande d'inscription a été <span style='color:red; font-weight:bold;'>refusée</span>.</p>" +
+                "<p>Si vous pensez qu'il s'agit d'une erreur ou souhaitez soumettre à nouveau votre dossier, n'hésitez pas à nous contacter.</p>" +
+                "<br><p>Cordialement,<br>L'équipe administrative</p>";
+
+        try {
+            emailSenderService.sendEmail(savedDoctor.getEmail(), subject, body);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send rejection email", e);
+        }
+
+        return mapToDoctorDto(savedDoctor);
+    }
+
 
     @Override
     public PatientDto updatePatient(PatientDto dto, MultipartFile profilePicture) {
@@ -388,6 +453,7 @@ public class UserServiceImpl implements UserService {
 
         // Patient-specific field
         user.setBloodGroup(dto.getBloodGroup());
+        user.setType(dto.getType());
         User updatedUser = userRepository.save(user);
         return mapToPatientDto(updatedUser);
     }
@@ -401,6 +467,7 @@ public class UserServiceImpl implements UserService {
         PatientDto dto = new PatientDto();
         BeanUtils.copyProperties(user, dto);
         dto.setBloodGroup(user.getBloodGroup());
+        dto.setType(user.getType());
         return dto;
     }
 

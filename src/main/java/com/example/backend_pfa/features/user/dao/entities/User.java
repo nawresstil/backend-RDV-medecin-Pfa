@@ -1,12 +1,10 @@
 package com.example.backend_pfa.features.user.dao.entities;
 
-import com.example.backend_pfa.features.DTO.AwardDto;
-import com.example.backend_pfa.features.DTO.EducationDto;
-import com.example.backend_pfa.features.DTO.ExperienceDto;
-import com.example.backend_pfa.features.DTO.RegistrationDto;
+import com.example.backend_pfa.features.DTO.*;
 import com.example.backend_pfa.features.Disponibility.dao.entities.Disponibility;
 import com.example.backend_pfa.features.Speciality.dao.entities.Speciality;
 import com.example.backend_pfa.features.user.enums.Role;
+import com.example.backend_pfa.features.user.enums.UserStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -92,26 +90,30 @@ public class User implements UserDetails {
     private String clinicAddress;
     private String clinicLogo;
 
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
     @ElementCollection
     @CollectionTable(name = "clinic_images", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "image_path")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private List<String> clinicImages;
 
+    private List<Long> specialityIds; // Used for incoming data from frontend
 
     private String clinicContact;
 
     private boolean isFree;
     private Double customPrice;
 
+//    @ElementCollection
+//    @CollectionTable(
+//            name = "doctors_services",
+//            joinColumns = @JoinColumn(name = "user_id"),
+//            foreignKey = @ForeignKey(name = "fk_user_services", foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE")
+//    )
     @ElementCollection
-    @CollectionTable(
-            name = "doctors_services",
-            joinColumns = @JoinColumn(name = "user_id"),
-            foreignKey = @ForeignKey(name = "fk_user_services", foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE")
-    )
-    @Column(name = "doctor_services")
-    private List<String> services;
+    @CollectionTable(name = "user_service", joinColumns = @JoinColumn(name = "user_id"))
+    private List<ServicesDto> services;
 
 
     @Transient
@@ -139,6 +141,8 @@ public class User implements UserDetails {
 
 
     private String bloodGroup;
+    private String type;
+
 
 
     public String getFullName() {

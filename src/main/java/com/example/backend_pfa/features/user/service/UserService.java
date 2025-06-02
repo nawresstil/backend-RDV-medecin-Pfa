@@ -30,6 +30,10 @@ public interface UserService {
 
     DoctorDto updateDoctor(DoctorDto doctorDto, MultipartFile profilePicture,MultipartFile[] clinicImages);
 
+    DoctorDto acceptDoctor(Long doctorId);
+
+    DoctorDto rejectDoctor(Long doctorId);
+
     PatientDto updatePatient(PatientDto dto, MultipartFile profilePicture);
 
 

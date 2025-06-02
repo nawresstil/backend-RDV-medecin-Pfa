@@ -48,6 +48,7 @@ public class RdvServiceImpl implements RdvService {
                 .startTime(rdvDto.getStartTime())
                 .endTime(rdvDto.getEndTime())
                 .status(RdvStatus.PENDING)
+                .createdAt(rdvDto.getCreatedAt())
                 .doctor(doctor)
                 .patient(patient)
                 .build();
@@ -158,6 +159,7 @@ public class RdvServiceImpl implements RdvService {
                 .startTime(rdv.getStartTime())
                 .endTime(rdv.getEndTime())
                 .status(rdv.getStatus().name())
+                .createdAt(rdv.getCreatedAt())
                 .doctorId(rdv.getDoctor().getId())
                 .patientId(rdv.getPatient().getId())
                 .build();

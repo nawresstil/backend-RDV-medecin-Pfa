@@ -173,6 +173,17 @@ public class UserController {
         return userService.getDoctors(keyword);
     }
 
+    @PutMapping("/{doctorId}/accept")
+    public ResponseEntity<DoctorDto> acceptDoctor(@PathVariable Long doctorId) {
+        DoctorDto acceptedDoctor = userService.acceptDoctor(doctorId);
+        return ResponseEntity.ok(acceptedDoctor);
+    }
+
+    @PutMapping("/{doctorId}/reject")
+    public ResponseEntity<DoctorDto> rejectDoctor(@PathVariable Long doctorId) {
+        DoctorDto rejectedDoctor = userService.rejectDoctor(doctorId);
+        return ResponseEntity.ok(rejectedDoctor);
+    }
 
 
 }

@@ -5,8 +5,10 @@ import com.example.backend_pfa.auth.dao.AuthenticationRequest;
 import com.example.backend_pfa.auth.dao.AuthenticationResponse;
 import com.example.backend_pfa.auth.dao.RegisterRequest;
 import com.example.backend_pfa.auth.security.JwtService;
+import com.example.backend_pfa.features.RDV.enums.RdvStatus;
 import com.example.backend_pfa.features.user.dao.entities.User;
 import com.example.backend_pfa.features.user.dao.repositories.UserRepository;
+import com.example.backend_pfa.features.user.enums.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,6 +37,7 @@ public class AuthenticationService {
                 .lastname(request.getLastname())
                 .joiningDate(request.getJoiningDate())
                 .role(request.getRole())   //Role.DOCTOR
+                .status(UserStatus.PENDING)
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))

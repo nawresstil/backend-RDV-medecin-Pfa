@@ -38,6 +38,41 @@ public class SpecialityServiceImpl implements SpecialityService {
         return specialityRepository.save(speciality);
     }
 
+
+
+    @Override
+    public Speciality updateSpeciality(Long id, String name, MultipartFile imageFile) throws IOException {
+        Speciality speciality = specialityRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Speciality not found with id: " + id));
+
+        // Update the name
+        speciality.setName(name);
+
+        // Update the image if a new one is provided
+        if (imageFile != null && !imageFile.isEmpty()) {
+            // Save the new image using the same method as in create
+            String newImagePath = saveImage(imageFile);
+
+            // OPTIONAL: delete old image file if needed
+            String oldImagePath = speciality.getImageUrl();
+            if (oldImagePath != null && !oldImagePath.isEmpty()) {
+                Path oldImage = Paths.get("uploads/").resolve(oldImagePath);
+                Files.deleteIfExists(oldImage);
+            }
+
+            // Set new image path
+            speciality.setImageUrl(newImagePath);
+            System.out.println(">>> Received update request for ID: " + id);
+            System.out.println(">>> Name: " + name);
+            System.out.println(">>> Image file: " + (imageFile != null ? imageFile.getOriginalFilename() : "null"));
+
+        }
+
+        // Save the updated speciality
+        return specialityRepository.save(speciality);
+    }
+
+
     private String saveImage(MultipartFile imageFile) throws IOException {
         String uploadDir = "uploads/";
         String fileName = UUID.randomUUID() + "_" + imageFile.getOriginalFilename();
@@ -53,18 +88,6 @@ public class SpecialityServiceImpl implements SpecialityService {
         return fileName;
     }
 
-    @Override
-    public Speciality updateSpeciality(Long id, String name, MultipartFile image) throws IOException {
-        Speciality speciality = specialityRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Speciality not found with id: " + id));
-
-        speciality.setName(name);
-        if (image != null && !image.isEmpty()) {
-            speciality.setImageUrl(Base64.getEncoder().encodeToString(image.getBytes()));
-        }
-
-        return specialityRepository.save(speciality);
-    }
 
     @Override
     public ResponseEntity<Speciality> getSpecialityById(@PathVariable Long id) {
